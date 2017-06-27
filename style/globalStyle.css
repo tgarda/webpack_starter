@@ -1,0 +1,12 @@
+body {
+  background: lightblue;
+  /*background: green;*/
+  border-width: 10px;
+  border: 10px solid blue;
+  /*border-color: red;*/
+  border-color: orange;
+}
+
+.globalp {
+  color: blue;
+}
