@@ -13,10 +13,20 @@ const extractGlobal = new ExtractTextPlugin('globalStyle-[contenthash:10].css');
 if (PRODUCTION) {console.log("in production <===============")};
 if (DEVELOPMENT) {console.log("in development <===============")};
 
+// var entry = PRODUCTION
+//   ? ['./src/index.js']
+//   : [
+//       './src/index.js',
+//       'webpack/hot/dev-server',
+//       'webpack-dev-server/client?http://localhost:8081'
+//   ];
+
 var entry = PRODUCTION
-  ? ['./src/index.js']
+  ? {
+    js: ['./src/index.js'],
+    vendor: ['react', 'react-dom']
+  }
   : [
-      './src/index.js',
       'webpack/hot/dev-server',
       'webpack-dev-server/client?http://localhost:8081'
   ];
