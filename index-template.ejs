@@ -8,6 +8,9 @@
       integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
       crossorigin="anonymous"></script>
 
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+
     <!-- The link tag below is for CSS built outside the webpack workflow. -->
     <link rel="stylesheet" href="./style/style.css">
 
@@ -30,6 +33,9 @@
     <!-- script tab commented out for cache invalidation. -->
     <!-- <script src='./dist/bundle.js'></script> -->
     <!-- hello -->
+
+    <!-- line below is for InlineManifestWebpackPlugin() in webpack.config.js -->
+    <%= htmlWebpackPlugin.files.webpackManifest %>
 
   </body>
 </html>

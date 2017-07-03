@@ -56,6 +56,8 @@ render (
       test image:
       <img src={require('./img/alphatest.png')} />
       <img src={require('./img/test-warning.png')} />
+      <img src={require('./img/alphatest.png')} />
+      <img src={require('./img/test-warning.png')} />
     </p>
   </div>,
 
