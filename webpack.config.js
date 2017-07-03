@@ -3,6 +3,7 @@ var webpack = require('webpack');
 var combineLoaders = require('webpack-combine-loaders');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var HTMLWebpackPlugin = require('html-webpack-plugin');
+var InlineManifestWebpackPlugin = require('inline-manifest-webpack-plugin');
 
 const DEVELOPMENT = process.env.NODE_ENV.trim() === 'development';
 const PRODUCTION = process.env.NODE_ENV.trim() === 'production';
@@ -24,9 +25,11 @@ if (DEVELOPMENT) {console.log("in development <===============")};
 var entry = PRODUCTION
   ? {
     js: ['./src/index.js'],
+    //vendor: ['./node_modules/react/dist/react']
     vendor: ['react', 'react-dom']
   }
   : [
+      './src/index.js',
       'webpack/hot/dev-server',
       'webpack-dev-server/client?http://localhost:8081'
   ];
@@ -45,7 +48,25 @@ var plugins = PRODUCTION
       extractComponents,
       extractGlobal,
       new HTMLWebpackPlugin({
-        template: 'index-template.html'
+        //template: 'index-template.html'
+        // because of the InlineManifestWebpackPlugin() below, we renamed index-template.html tp index-template.ejs
+        template: 'index-template.ejs'
+      }),
+      new InlineManifestWebpackPlugin({ name: 'webpackManifest' }),
+      new webpack.NamedModulesPlugin(),
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor', // Specify the common bundle's name.
+        minChunks: function (module) {
+          //  implicit common vendor chunks: allow only modules in 'node_modules' into vendor chunk
+          // this assumes your vendor imports exist in the node_modules directory
+          return module.context && module.context.indexOf('node_modules') !== -1;
+        }
+      }),
+      //CommonChunksPlugin will now extract all the common modules from vendor and main bundles
+      new webpack.optimize.CommonsChunkPlugin({
+          name: 'manifest'
+          // But since there are no more common modules between them
+          // we end up with just the runtime code included in the manifest file
       })
     ]
   : [ new webpack.HotModuleReplacementPlugin() ];
@@ -107,7 +128,9 @@ const cssLoadersGlobal = PRODUCTION
 
 module.exports = {
   externals: {
-    'jquery': 'jQuery'  //jquery is available at the global variable jQuery
+    'jquery': 'jQuery',  //jquery is available at the global variable jQuery
+    'react': 'React',
+    'react-dom': 'ReactDOM'
   },
   devtool: 'source-map',
   entry: entry,
@@ -116,7 +139,8 @@ module.exports = {
     //filename: './bundle.js'
     path: path.join(__dirname, 'dist'),
     publicPath: PRODUCTION ? '/dist/' : '/dist/',
-    filename: PRODUCTION ? 'bundle.[hash:12].min.js' : 'bundle.js'
+    //filename: PRODUCTION ? '[name].bundle.[hash:12].min.js' : 'bundle.js'
+    filename: PRODUCTION ? '[name].[chunkhash].min.js' : 'bundle.js'
   },
   module: {
     loaders: [{
