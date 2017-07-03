@@ -6,3 +6,8 @@ Combine:
 
 1. basic webpack loaders and plugins
 2. reactjs
+
+Implement:
+
+1. javascript code splitting
+2. cache busting for js files
