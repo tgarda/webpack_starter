@@ -14,25 +14,27 @@ const extractGlobal = new ExtractTextPlugin('globalStyle-[contenthash:10].css');
 if (PRODUCTION) {console.log("in production <===============")};
 if (DEVELOPMENT) {console.log("in development <===============")};
 
-// var entry = PRODUCTION
-//   ? ['./src/index.js']
-//   : [
-//       './src/index.js',
-//       'webpack/hot/dev-server',
-//       'webpack-dev-server/client?http://localhost:8081'
-//   ];
+var buildEntryPoint = function(entryPoint){
+  return [
+    'webpack-dev-server/client?http://localhost:8081',
+    'webpack/hot/only-dev-server',
+    entryPoint
+  ]
+}
 
 var entry = PRODUCTION
   ? {
     js: ['./src/index.js'],
+    jstest1: ['./src/index_test1.js'],
     //vendor: ['./node_modules/react/dist/react']
     vendor: ['react', 'react-dom']
   }
-  : [
-      './src/index.js',
-      'webpack/hot/dev-server',
-      'webpack-dev-server/client?http://localhost:8081'
-  ];
+  :
+    {
+      js: buildEntryPoint('./src/index.js'),
+      jstest1: buildEntryPoint('./src/index_test1.js')
+    }
+  ;
 
 var plugins = PRODUCTION
   ? [
@@ -50,15 +52,29 @@ var plugins = PRODUCTION
       new HTMLWebpackPlugin({
         //template: 'index-template.html'
         // because of the InlineManifestWebpackPlugin() below, we renamed index-template.html tp index-template.ejs
-        template: 'index-template.ejs'
+        template: 'index-template.ejs',
+        filename: 'index.html',
+        chunks: ['js', 'vendor'],
+        chunksSortMode: 'dependency'
       }),
       new InlineManifestWebpackPlugin({ name: 'webpackManifest' }),
+
+      // the next two plugins generate a new HTML file for Wordpress: index_test1.html
+      new HTMLWebpackPlugin({
+        //template: 'index-template_test1.html',
+        template: 'index-template_test1.ejs',
+        filename: 'index_test.html',
+        chunks: ['jstest1', 'vendor'],
+        chunksSortMode: 'dependency'
+      }),
+      new InlineManifestWebpackPlugin({ name: 'webpackManifest_test1' }),
+
       new webpack.NamedModulesPlugin(),
       new webpack.optimize.CommonsChunkPlugin({
         name: 'vendor', // Specify the common bundle's name.
         minChunks: function (module) {
           //  implicit common vendor chunks: allow only modules in 'node_modules' into vendor chunk
-          // this assumes your vendor imports exist in the node_modules directory
+          // this assumes vendor imports exist in the node_modules directory
           return module.context && module.context.indexOf('node_modules') !== -1;
         }
       }),
@@ -126,12 +142,15 @@ const cssLoadersGlobal = PRODUCTION
       )
   :   ['style-loader', 'css-loader?localIdentName=[path][name]---[local]'];
 
+var externals = {
+  'jquery': 'jQuery',  //jquery is available at the global variable jQuery
+  'react': 'React',
+  'react-dom': 'ReactDOM'
+};
+
+
 module.exports = {
-  externals: {
-    'jquery': 'jQuery',  //jquery is available at the global variable jQuery
-    'react': 'React',
-    'react-dom': 'ReactDOM'
-  },
+  externals: externals,
   devtool: 'source-map',
   entry: entry,
   plugins: plugins,
@@ -140,7 +159,7 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     publicPath: PRODUCTION ? '/dist/' : '/dist/',
     //filename: PRODUCTION ? '[name].bundle.[hash:12].min.js' : 'bundle.js'
-    filename: PRODUCTION ? '[name].[chunkhash].min.js' : 'bundle.js'
+    filename: PRODUCTION ? '[name].[chunkhash].min.js' : '[name].bundle.js'
   },
   module: {
     loaders: [{
