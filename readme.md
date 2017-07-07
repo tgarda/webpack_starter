@@ -11,3 +11,5 @@ Implement:
 
 1. javascript code splitting
 2. cache busting for js files
+3. multiple independent React components, each on a different html page
+
